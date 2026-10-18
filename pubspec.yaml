@@ -2,7 +2,7 @@ name: dart_analysis_server_proxy
 description: A transparent LSP proxy configured through dart.analyzerPath, allowing CLI tools to reuse the IDE's Dart analysis server.
 homepage: https://github.com/fluttercandies/analysis_server_proxy
 repository: https://github.com/fluttercandies/analysis_server_proxy
-version: 0.1.0
+version: 0.1.2
 
 environment:
   sdk: ^3.7.0

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'bridge_server.dart';
+import 'dart_project.dart';
 import 'lsp_framing.dart';
 import 'proxy_logger.dart';
 import 'runtime.dart';
@@ -158,7 +159,10 @@ class LspProxy {
   Future<void> _forwardFromIde(LspMessage message) async {
     final json = decodeJson(message);
     if (json['method'] == 'initialize') {
-      final roots = _rootsFromInitialize(json['params']);
+      final roots = <String>{};
+      for (final root in _rootsFromInitialize(json['params'])) {
+        if (await isDartProjectRoot(root)) roots.add(root);
+      }
       if (roots.isNotEmpty) {
         try {
           await _startBridge(roots);

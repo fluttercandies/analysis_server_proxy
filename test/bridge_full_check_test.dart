@@ -23,9 +23,11 @@ class _Harness {
     String mode, {
     required Duration settle,
     required Duration limit,
+    List<Directory> workspaceRoots = const [],
   }) async {
     await Directory('build').create();
     final root = (await Directory('build').createTemp('bridge_full_')).absolute;
+    await File('${root.path}/pubspec.yaml').writeAsString('name: fixture\n');
     final input = StreamController<List<int>>();
     final output = StreamController<List<int>>();
     unawaited(output.stream.drain<void>());
@@ -54,6 +56,11 @@ class _Harness {
         'rootUri': rootUri,
         'workspaceFolders': [
           {'uri': rootUri, 'name': 'root'},
+          for (final workspaceRoot in workspaceRoots)
+            {
+              'uri': Uri.file(workspaceRoot.path).toString(),
+              'name': 'additional root',
+            },
         ],
       },
     });
@@ -104,6 +111,31 @@ List<String> _codes(Map<String, Object?> response) => [
 ];
 
 void main() {
+  test('publishes bridge endpoints only for Dart workspace roots', () async {
+    final nonDartRoot = await Directory.systemTemp.createTemp(
+      'bridge_non_dart_',
+    );
+    final harness = await _Harness.start(
+      'edit',
+      settle: const Duration(milliseconds: 500),
+      limit: const Duration(seconds: 20),
+      workspaceRoots: [nonDartRoot],
+    );
+    try {
+      await harness.request({'op': 'status'});
+      expect(await harness.endpoint.exists(), isTrue);
+      expect(
+        await File(
+          '${nonDartRoot.path}/.dart_tool/dana-ide-bridge.json',
+        ).exists(),
+        isFalse,
+      );
+    } finally {
+      await harness.stop();
+      await nonDartRoot.delete(recursive: true);
+    }
+  });
+
   test('fullCheck waits for diagnostics published after idle and never '
       'forces a reanalysis', () async {
     final harness = await _Harness.start(

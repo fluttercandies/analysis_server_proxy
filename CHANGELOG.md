@@ -1,3 +1,11 @@
+## 0.1.2
+
+- Keep parent `.dart_tool` package configurations from identifying unrelated roots.
+
+## 0.1.1
+
+- Publish IDE bridge endpoints only for detected Dart project roots.
+
 ## 0.1.0
 
 - Bound large-message fixture memory without reducing its 120 MB framing workload.
