@@ -21,6 +21,8 @@ const _ignoredDirectories = {
 /// packages are nested below the IDE workspace folder. Generated and vendored
 /// trees are skipped so a non-Dart workspace does not become eligible merely
 /// because it contains cached dependencies.
+/// A package must have a `pubspec.yaml`; generated metadata and loose Dart
+/// files alone do not qualify a workspace for the IDE bridge.
 Future<bool> isDartProjectRoot(String path) async {
   final root = Directory(path);
   try {
@@ -38,9 +40,6 @@ Future<bool> isDartProjectRoot(String path) async {
       if (await _hasDartMarker(current.directory)) return true;
       await for (final entity in current.directory.list(followLinks: false)) {
         if (++entries > _maxSearchEntries) return false;
-        if (entity is File && entity.path.toLowerCase().endsWith('.dart')) {
-          return true;
-        }
         if (entity is Directory) {
           final name =
               entity.uri.pathSegments
@@ -59,10 +58,5 @@ Future<bool> isDartProjectRoot(String path) async {
   }
 }
 
-Future<bool> _hasDartMarker(Directory directory) async {
-  return await File.fromUri(directory.uri.resolve('pubspec.yaml')).exists() ||
-      await File.fromUri(
-        directory.uri.resolve('.dart_tool/package_config.json'),
-      ).exists() ||
-      await File.fromUri(directory.uri.resolve('.packages')).exists();
-}
+Future<bool> _hasDartMarker(Directory directory) =>
+    File.fromUri(directory.uri.resolve('pubspec.yaml')).exists();

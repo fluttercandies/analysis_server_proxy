@@ -1,5 +1,7 @@
 ## 0.1.2
 
+- Require `pubspec.yaml` within the workspace for IDE bridge publication;
+  `.dart_tool`, legacy package metadata and loose Dart files do not qualify.
 - Keep parent `.dart_tool` package configurations from identifying unrelated roots.
 
 ## 0.1.1
